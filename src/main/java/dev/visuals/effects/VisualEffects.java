@@ -189,7 +189,9 @@ public final class VisualEffects {
             double px = x + Math.random();
             double py = y + 0.85 + Math.random() * 0.25;
             double pz = z + Math.random();
-            double gust = gusts ? 0.75 + Math.random() * 0.5 : 1.0;
+            // Gusts evolve over time so nearby leaves react to the same passing breeze.
+            double gustWave = 0.72 + 0.28 * Math.sin((tickCounter + i * 3L) * 0.11);
+            double gust = gusts ? gustWave * (0.9 + Math.random() * 0.2) : 1.0;
             double driftX = (Math.random() - 0.5) * 0.012 * speed + windX * gust;
             double driftZ = (Math.random() - 0.5) * 0.012 * speed + windZ * gust;
             level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, leafState), px, py, pz,
