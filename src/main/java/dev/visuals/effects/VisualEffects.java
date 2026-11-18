@@ -34,7 +34,7 @@ public final class VisualEffects {
         if ((tickCounter & 3L) != 0L) return;
 
         ConfigManager cfg = VisualsMod.config();
-        if (cfg == null || !cfg.getBooleanSafe(ConfigManager.MOD_ENABLED_ID)) return;
+        if (cfg == null || !Boolean.TRUE.equals(cfg.getRaw(ConfigManager.MOD_ENABLED_ID))) return;
 
         Player player = client.player;
         Level level = client.level;
