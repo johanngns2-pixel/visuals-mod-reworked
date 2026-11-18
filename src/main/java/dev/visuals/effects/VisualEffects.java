@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -54,6 +55,7 @@ public final class VisualEffects {
             waterRings(cfg, level, player);
             groundDust(cfg, level, player);
             snowSteps(cfg, level, player);
+            surfaceSteps(cfg, level, player);
         }
     }
 
@@ -184,6 +186,26 @@ public final class VisualEffects {
         double z = player.getZ() + (Math.random() - 0.5) * 0.4;
         level.addParticle(ParticleTypes.SNOWFLAKE, x, ground.getY() + 1.03, z,
                 (Math.random() - 0.5) * 0.008, 0.012, (Math.random() - 0.5) * 0.008);
+    }
+
+
+    /**
+     * Emits a tiny amount of the actual surface block's particles behind moving players.
+     * This is a short-lived particle trail, not a persistent footprint decal.
+     */
+    private static void surfaceSteps(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "touch.footprints", true) || !player.onGround()) return;
+        if (player.getDeltaMovement().horizontalDistanceSqr() < 0.01 || Math.random() > 0.12) return;
+        BlockPos ground = player.blockPosition().below();
+        var state = level.getBlockState(ground);
+        if (state.isAir() || !state.getFluidState().isEmpty()) return;
+
+        double speed = Math.min(0.045, player.getDeltaMovement().horizontalDistance() * 0.12);
+        double x = player.getX() - player.getDeltaMovement().x * 1.4;
+        double z = player.getZ() - player.getDeltaMovement().z * 1.4;
+        level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state),
+                x, ground.getY() + 1.02, z,
+                (Math.random() - 0.5) * speed, 0.012, (Math.random() - 0.5) * speed);
     }
 
     private static boolean bool(ConfigManager cfg, String id, boolean fallback) {
