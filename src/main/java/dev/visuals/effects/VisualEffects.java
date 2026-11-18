@@ -95,8 +95,13 @@ public final class VisualEffects {
             double y = player.getY() + 1.0 + Math.random() * 3.0;
             double z = player.getZ() + (Math.random() - 0.5) * 14.0;
             BlockPos pos = BlockPos.containing(x, y, z);
-            boolean nearTorch = bool(cfg, "fireflies.nearTorches", true) && hasNearbyTorch(level, pos);
-            if (level.getMaxLocalRawBrightness(pos) > 10 && !nearTorch) continue;
+            // In bright areas, the optional torch preference keeps fireflies near light sources.
+            // In darkness they can appear naturally without an expensive block scan.
+            if (level.getMaxLocalRawBrightness(pos) > 10
+                    && bool(cfg, "fireflies.nearTorches", true)
+                    && !hasNearbyTorch(level, pos)) {
+                continue;
+            }
             double drift = (Math.random() - 0.5) * ("trail".equals(style) ? 0.035 : 0.012);
             double vertical = "trail".equals(style) ? 0.002 : 0.006;
             level.addParticle(new DustParticleOptions(color, glow), x, y, z, drift, vertical, drift);
