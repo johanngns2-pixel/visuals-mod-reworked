@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 public final class VisualEffects {
     private static boolean registered;
     private static long tickCounter;
+    private static int touchEffectsThisTick;
 
     private VisualEffects() {}
 
@@ -43,6 +44,7 @@ public final class VisualEffects {
 
         Player player = client.player;
         Level level = client.level;
+        touchEffectsThisTick = 0;
         if (cfg.isEffectActive(Tabs.FIREFLIES)) {
             fireflies(cfg, level, player);
         }
@@ -172,7 +174,9 @@ public final class VisualEffects {
         double x = player.getX() + (Math.random() - 0.5) * 0.7;
         double z = player.getZ() + (Math.random() - 0.5) * 0.7;
         double y = waterPos.getY() + 0.9;
+        if (!canEmitTouch(cfg)) return;
         level.addParticle(ParticleTypes.SPLASH, x, y, z, 0.0, 0.015, 0.0);
+        touchEffectsThisTick++;
     }
 
     /** Small foot-level dust puffs on loose ground while walking; purely cosmetic. */
@@ -184,8 +188,10 @@ public final class VisualEffects {
         if (block != Blocks.SAND && block != Blocks.RED_SAND && block != Blocks.GRAVEL) return;
         double x = player.getX() + (Math.random() - 0.5) * 0.45;
         double z = player.getZ() + (Math.random() - 0.5) * 0.45;
+        if (!canEmitTouch(cfg)) return;
         level.addParticle(ParticleTypes.POOF, x, ground.getY() + 1.02, z,
                 (Math.random() - 0.5) * 0.012, 0.008, (Math.random() - 0.5) * 0.012);
+        touchEffectsThisTick++;
     }
 
 
@@ -198,8 +204,10 @@ public final class VisualEffects {
         if (block != Blocks.SNOW && block != Blocks.SNOW_BLOCK && block != Blocks.POWDER_SNOW) return;
         double x = player.getX() + (Math.random() - 0.5) * 0.4;
         double z = player.getZ() + (Math.random() - 0.5) * 0.4;
+        if (!canEmitTouch(cfg)) return;
         level.addParticle(ParticleTypes.SNOWFLAKE, x, ground.getY() + 1.03, z,
                 (Math.random() - 0.5) * 0.008, 0.012, (Math.random() - 0.5) * 0.008);
+        touchEffectsThisTick++;
     }
 
 
@@ -217,9 +225,17 @@ public final class VisualEffects {
         double speed = Math.min(0.045, player.getDeltaMovement().horizontalDistance() * 0.12);
         double x = player.getX() - player.getDeltaMovement().x * 1.4;
         double z = player.getZ() - player.getDeltaMovement().z * 1.4;
+        if (!canEmitTouch(cfg)) return;
         level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state),
                 x, ground.getY() + 1.02, z,
                 (Math.random() - 0.5) * speed, 0.012, (Math.random() - 0.5) * speed);
+        touchEffectsThisTick++;
+    }
+
+    /** Enforces the per-update budget shared by all touch/environment particle effects. */
+    private static boolean canEmitTouch(ConfigManager cfg) {
+        int limit = Math.max(0, integer(cfg, "touch.maxEffects", 80));
+        return touchEffectsThisTick < limit;
     }
 
     private static boolean bool(ConfigManager cfg, String id, boolean fallback) {
