@@ -120,6 +120,7 @@ public final class VisualEffects {
         if (bool(cfg, "wildlife.butterflies", true)) enabled.add("butterfly");
         if (bool(cfg, "wildlife.dragonflies", true)) enabled.add("dragonfly");
         if (bool(cfg, "wildlife.birds", true)) enabled.add("bird");
+        if (bool(cfg, "wildlife.bats", true) && !day) enabled.add("bat");
         if (enabled.isEmpty()) return;
         String type = enabled.get((int) (Math.random() * enabled.size()));
 
@@ -127,10 +128,13 @@ public final class VisualEffects {
         double x = player.getX() + (Math.random() - 0.5) * range * 2.0;
         double y = player.getY() + 1.5 + Math.random() * 4.0;
         double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
-        double drift = "bird".equals(type) ? 0.025 : ("dragonfly".equals(type) ? 0.012 : 0.006);
+        double drift = "bird".equals(type) ? 0.025
+                : ("bat".equals(type) ? 0.035 : ("dragonfly".equals(type) ? 0.012 : 0.006));
         var particle = "butterfly".equals(type) ? ParticleTypes.CHERRY_LEAVES
-                : ("dragonfly".equals(type) ? ParticleTypes.END_ROD : ParticleTypes.HAPPY_VILLAGER);
-        double vertical = "bird".equals(type) ? 0.004 : (Math.random() - 0.5) * 0.004;
+                : ("dragonfly".equals(type) ? ParticleTypes.END_ROD
+                : ("bat".equals(type) ? ParticleTypes.ASH : ParticleTypes.HAPPY_VILLAGER));
+        double vertical = "bird".equals(type) ? 0.004
+                : ("bat".equals(type) ? (Math.random() - 0.5) * 0.018 : (Math.random() - 0.5) * 0.004);
         level.addParticle(particle, x, y, z,
                 (Math.random() - 0.5) * drift, vertical, (Math.random() - 0.5) * drift);
     }
