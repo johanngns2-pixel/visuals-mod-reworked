@@ -83,7 +83,8 @@ public final class VisualEffects {
         boolean nearTorch = bool(cfg, "fireflies.nearTorches", true) && hasNearbyTorch(level, pos);
         if (level.getMaxLocalRawBrightness(pos) > 10 && !nearTorch) return;
         double drift = (Math.random() - 0.5) * 0.012;
-        int color = integer(cfg, "fireflies.primaryColor", 0xFFFFE78A);
+        int color = integer(cfg, Math.random() < 0.5 ? "fireflies.primaryColor" : "fireflies.secondaryColor",
+                0xFFFFE78A);
         float red = ((color >> 16) & 0xFF) / 255.0f;
         float green = ((color >> 8) & 0xFF) / 255.0f;
         float blue = (color & 0xFF) / 255.0f;
