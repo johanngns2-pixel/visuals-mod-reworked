@@ -110,13 +110,12 @@ public final class VisualEffects {
     }
 
     private static void wildlife(ConfigManager cfg, Level level, Player player) {
-        int amount = integer(cfg, "wildlife.amount", 12);
-        if (amount <= 0 || Math.random() > Math.min(0.35, amount / 160.0)) return;
+        int amount = Math.max(0, Math.min(50, integer(cfg, "wildlife.amount", 12)));
+        if (amount == 0) return;
         boolean day = level.getDayTime() % 24000L < 12000L;
         boolean dayNightCycle = bool(cfg, "wildlife.dayNightCycle", true);
 
-        // With the day/night cycle enabled, daytime species and nocturnal bats use
-        // separate windows. Bats must not be accidentally blocked by the night check.
+        // Daytime species and nocturnal bats use separate windows when the cycle is enabled.
         java.util.ArrayList<String> enabled = new java.util.ArrayList<>();
         if (!dayNightCycle || day) {
             if (bool(cfg, "wildlife.butterflies", true)) enabled.add("butterfly");
@@ -125,23 +124,27 @@ public final class VisualEffects {
         }
         if (bool(cfg, "wildlife.bats", true) && (!dayNightCycle || !day)) enabled.add("bat");
         if (enabled.isEmpty()) return;
-        String type = enabled.get((int) (Math.random() * enabled.size()));
 
         double range = Math.max(8.0, Math.min(64.0, number(cfg, "wildlife.spawnRange", 24.0)));
-        double x = player.getX() + (Math.random() - 0.5) * range * 2.0;
-        double y = player.getY() + 1.5 + Math.random() * 4.0;
-        double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
-        double drift = "bird".equals(type) ? 0.025
-                : ("bat".equals(type) ? 0.035 : ("dragonfly".equals(type) ? 0.012 : 0.006));
-        var particle = "butterfly".equals(type) ? ParticleTypes.CHERRY_LEAVES
-                : ("dragonfly".equals(type) ? ParticleTypes.END_ROD
-                : ("bat".equals(type) ? ParticleTypes.ASH : ParticleTypes.HAPPY_VILLAGER));
-        double vertical = "bird".equals(type) ? 0.004
-                : ("bat".equals(type) ? (Math.random() - 0.5) * 0.018 : (Math.random() - 0.5) * 0.004);
-        level.addParticle(particle, x, y, z,
-                (Math.random() - 0.5) * drift, vertical, (Math.random() - 0.5) * drift);
+        // "Amount" is the maximum number of ambient particles emitted per effect update.
+        // Keep a hard cap so a high setting cannot create an unbounded particle burst.
+        for (int i = 0; i < amount; i++) {
+            if (Math.random() > 0.35) continue;
+            String type = enabled.get((int) (Math.random() * enabled.size()));
+            double x = player.getX() + (Math.random() - 0.5) * range * 2.0;
+            double y = player.getY() + 1.5 + Math.random() * 4.0;
+            double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
+            double drift = "bird".equals(type) ? 0.025
+                    : ("bat".equals(type) ? 0.035 : ("dragonfly".equals(type) ? 0.012 : 0.006));
+            var particle = "butterfly".equals(type) ? ParticleTypes.CHERRY_LEAVES
+                    : ("dragonfly".equals(type) ? ParticleTypes.END_ROD
+                    : ("bat".equals(type) ? ParticleTypes.ASH : ParticleTypes.HAPPY_VILLAGER));
+            double vertical = "bird".equals(type) ? 0.004
+                    : ("bat".equals(type) ? (Math.random() - 0.5) * 0.018 : (Math.random() - 0.5) * 0.004);
+            level.addParticle(particle, x, y, z,
+                    (Math.random() - 0.5) * drift, vertical, (Math.random() - 0.5) * drift);
+        }
     }
-
 
 
     /** Checks for nearby vanilla torch light sources without loading additional chunks. */
