@@ -113,14 +113,17 @@ public final class VisualEffects {
         int amount = integer(cfg, "wildlife.amount", 12);
         if (amount <= 0 || Math.random() > Math.min(0.35, amount / 160.0)) return;
         boolean day = level.getDayTime() % 24000L < 12000L;
-        if (bool(cfg, "wildlife.dayNightCycle", true) && !day) return;
+        boolean dayNightCycle = bool(cfg, "wildlife.dayNightCycle", true);
 
-        // Pick among enabled approximations instead of always letting the first toggle win.
+        // With the day/night cycle enabled, daytime species and nocturnal bats use
+        // separate windows. Bats must not be accidentally blocked by the night check.
         java.util.ArrayList<String> enabled = new java.util.ArrayList<>();
-        if (bool(cfg, "wildlife.butterflies", true)) enabled.add("butterfly");
-        if (bool(cfg, "wildlife.dragonflies", true)) enabled.add("dragonfly");
-        if (bool(cfg, "wildlife.birds", true)) enabled.add("bird");
-        if (bool(cfg, "wildlife.bats", true) && !day) enabled.add("bat");
+        if (!dayNightCycle || day) {
+            if (bool(cfg, "wildlife.butterflies", true)) enabled.add("butterfly");
+            if (bool(cfg, "wildlife.dragonflies", true)) enabled.add("dragonfly");
+            if (bool(cfg, "wildlife.birds", true)) enabled.add("bird");
+        }
+        if (bool(cfg, "wildlife.bats", true) && (!dayNightCycle || !day)) enabled.add("bat");
         if (enabled.isEmpty()) return;
         String type = enabled.get((int) (Math.random() * enabled.size()));
 
