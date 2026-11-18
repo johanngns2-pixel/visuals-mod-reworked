@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -47,6 +48,9 @@ public final class VisualEffects {
         }
         if (cfg.isEffectActive(Tabs.FOLIAGE)) {
             fallingLeaves(cfg, level, player);
+        }
+        if (cfg.isEffectActive(Tabs.TOUCH)) {
+            waterRings(cfg, level, player);
         }
     }
 
@@ -122,6 +126,19 @@ public final class VisualEffects {
             level.addParticle(ParticleTypes.CHERRY_LEAVES, px, py, pz,
                     drift, -0.012 * speed, drift);
         }
+    }
+
+    /** Emits a small vanilla splash while the player moves through water. */
+    private static void waterRings(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "touch.waterRings", true) || player.getDeltaMovement().horizontalDistanceSqr() < 0.0025) return;
+        if (Math.random() > 0.45) return;
+        BlockPos feet = player.blockPosition();
+        BlockPos waterPos = level.getFluidState(feet).is(FluidTags.WATER) ? feet : feet.below();
+        if (!level.getFluidState(waterPos).is(FluidTags.WATER)) return;
+        double x = player.getX() + (Math.random() - 0.5) * 0.7;
+        double z = player.getZ() + (Math.random() - 0.5) * 0.7;
+        double y = waterPos.getY() + 0.9;
+        level.addParticle(ParticleTypes.SPLASH, x, y, z, 0.0, 0.015, 0.0);
     }
 
     private static boolean bool(ConfigManager cfg, String id, boolean fallback) {
