@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -43,6 +44,9 @@ public final class VisualEffects {
         }
         if (cfg.isEffectActive(Tabs.WILDLIFE)) {
             wildlife(cfg, level, player);
+        }
+        if (cfg.isEffectActive(Tabs.FOLIAGE)) {
+            fallingLeaves(cfg, level, player);
         }
     }
 
@@ -89,6 +93,35 @@ public final class VisualEffects {
         double drift = "bird".equals(type) ? 0.025 : 0.006;
         level.addParticle(ParticleTypes.HAPPY_VILLAGER, x, y, z,
                 (Math.random() - 0.5) * drift, 0.002, (Math.random() - 0.5) * drift);
+    }
+
+
+    /**
+     * Uses the vanilla cherry-leaf particle around actual leaf blocks. This is a visual
+     * approximation (not a new particle texture) and never changes blocks.
+     */
+    private static void fallingLeaves(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "foliage.fallingLeaves", true)) return;
+        int amount = integer(cfg, "foliage.leafAmount", 24);
+        if (amount <= 0) return;
+
+        int range = Math.max(8, Math.min(64, integer(cfg, "foliage.renderRange", 32)));
+        int attempts = Math.max(1, Math.min(18, amount / 3));
+        double speed = Math.max(0.1, Math.min(2.0, number(cfg, "foliage.fallSpeed", 0.7)));
+        for (int i = 0; i < attempts; i++) {
+            int x = player.blockPosition().getX() + (int) (Math.random() * range * 2 - range);
+            int y = player.blockPosition().getY() + (int) (Math.random() * 12 - 4);
+            int z = player.blockPosition().getZ() + (int) (Math.random() * range * 2 - range);
+            BlockPos leafPos = new BlockPos(x, y, z);
+            if (!level.getBlockState(leafPos).is(BlockTags.LEAVES)) continue;
+
+            double px = x + Math.random();
+            double py = y + 0.85 + Math.random() * 0.25;
+            double pz = z + Math.random();
+            double drift = (Math.random() - 0.5) * 0.012 * speed;
+            level.addParticle(ParticleTypes.CHERRY_LEAVES, px, py, pz,
+                    drift, -0.012 * speed, drift);
+        }
     }
 
     private static boolean bool(ConfigManager cfg, String id, boolean fallback) {
