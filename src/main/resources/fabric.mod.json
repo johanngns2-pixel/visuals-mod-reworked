@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "visuals",
+  "version": "${version}",
+  "name": "Visuals",
+  "description": "Rein visuelle, clientseitige Mod: Himmel, Wetter, Licht, Partikel und mehr, steuerbar über ein vollständiges Einstellungs-GUI.",
+  "authors": [],
+  "contact": {
+    "sources": "https://github.com/johanngns2-pixel/visuals-mod"
+  },
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.visuals.VisualsMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.1",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
