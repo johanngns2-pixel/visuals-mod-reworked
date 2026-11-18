@@ -114,19 +114,24 @@ public final class VisualEffects {
         boolean day = level.getDayTime() % 24000L < 12000L;
         if (bool(cfg, "wildlife.dayNightCycle", true) && !day) return;
 
-        String type;
-        if (bool(cfg, "wildlife.butterflies", true)) type = "butterfly";
-        else if (bool(cfg, "wildlife.dragonflies", true)) type = "dragonfly";
-        else if (bool(cfg, "wildlife.birds", true)) type = "bird";
-        else return;
+        // Pick among enabled approximations instead of always letting the first toggle win.
+        java.util.ArrayList<String> enabled = new java.util.ArrayList<>();
+        if (bool(cfg, "wildlife.butterflies", true)) enabled.add("butterfly");
+        if (bool(cfg, "wildlife.dragonflies", true)) enabled.add("dragonfly");
+        if (bool(cfg, "wildlife.birds", true)) enabled.add("bird");
+        if (enabled.isEmpty()) return;
+        String type = enabled.get((int) (Math.random() * enabled.size()));
 
-        double range = Math.max(8.0, Math.min(32.0, number(cfg, "wildlife.spawnRange", 24.0)));
+        double range = Math.max(8.0, Math.min(64.0, number(cfg, "wildlife.spawnRange", 24.0)));
         double x = player.getX() + (Math.random() - 0.5) * range * 2.0;
         double y = player.getY() + 1.5 + Math.random() * 4.0;
         double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
-        double drift = "bird".equals(type) ? 0.025 : 0.006;
-        level.addParticle(ParticleTypes.HAPPY_VILLAGER, x, y, z,
-                (Math.random() - 0.5) * drift, 0.002, (Math.random() - 0.5) * drift);
+        double drift = "bird".equals(type) ? 0.025 : ("dragonfly".equals(type) ? 0.012 : 0.006);
+        var particle = "butterfly".equals(type) ? ParticleTypes.CHERRY_LEAVES
+                : ("dragonfly".equals(type) ? ParticleTypes.END_ROD : ParticleTypes.HAPPY_VILLAGER);
+        double vertical = "bird".equals(type) ? 0.004 : (Math.random() - 0.5) * 0.004;
+        level.addParticle(particle, x, y, z,
+                (Math.random() - 0.5) * drift, vertical, (Math.random() - 0.5) * drift);
     }
 
 
