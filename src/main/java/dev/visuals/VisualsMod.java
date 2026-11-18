@@ -5,6 +5,7 @@ import dev.visuals.config.OptionRegistry;
 import dev.visuals.config.PresetManager;
 import dev.visuals.config.UndoStack;
 import dev.visuals.config.def.GeneralOptions;
+import dev.visuals.config.def.ModuleOptions;
 import dev.visuals.config.def.SkyOptions;
 import dev.visuals.config.def.Tabs;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -36,6 +37,7 @@ public final class VisualsMod implements ClientModInitializer {
         Tabs.registerAll(registry);
         GeneralOptions.register(registry);
         SkyOptions.register(registry);
+        ModuleOptions.register(registry);
         // Weitere Reiter-Optionen werden hier registriert, sobald sie existieren.
         registry.freeze();
 
