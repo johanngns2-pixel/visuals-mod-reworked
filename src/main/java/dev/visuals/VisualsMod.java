@@ -11,6 +11,7 @@ import dev.visuals.config.def.Tabs;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.visuals.gui.VisualsScreen;
 import dev.visuals.util.Log;
+import dev.visuals.effects.VisualEffects;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
@@ -60,6 +61,7 @@ public final class VisualsMod implements ClientModInitializer {
         });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> config.close());
+        VisualEffects.register();
         Log.info("Visuals geladen: {} Reiter, {} Optionen", registry.tabs().size(), registry.options().size());
     }
 
