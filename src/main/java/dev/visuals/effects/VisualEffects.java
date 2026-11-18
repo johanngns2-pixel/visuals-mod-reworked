@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.player.Player;
@@ -51,6 +52,7 @@ public final class VisualEffects {
         }
         if (cfg.isEffectActive(Tabs.TOUCH)) {
             waterRings(cfg, level, player);
+            groundDust(cfg, level, player);
         }
     }
 
@@ -139,6 +141,19 @@ public final class VisualEffects {
         double z = player.getZ() + (Math.random() - 0.5) * 0.7;
         double y = waterPos.getY() + 0.9;
         level.addParticle(ParticleTypes.SPLASH, x, y, z, 0.0, 0.015, 0.0);
+    }
+
+    /** Small foot-level dust puffs on loose ground while walking; purely cosmetic. */
+    private static void groundDust(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "touch.dust", true) || !player.onGround()) return;
+        if (player.getDeltaMovement().horizontalDistanceSqr() < 0.0064 || Math.random() > 0.32) return;
+        BlockPos ground = player.blockPosition().below();
+        var block = level.getBlockState(ground).getBlock();
+        if (block != Blocks.SAND && block != Blocks.RED_SAND && block != Blocks.GRAVEL) return;
+        double x = player.getX() + (Math.random() - 0.5) * 0.45;
+        double z = player.getZ() + (Math.random() - 0.5) * 0.45;
+        level.addParticle(ParticleTypes.POOF, x, ground.getY() + 1.02, z,
+                (Math.random() - 0.5) * 0.012, 0.008, (Math.random() - 0.5) * 0.012);
     }
 
     private static boolean bool(ConfigManager cfg, String id, boolean fallback) {
