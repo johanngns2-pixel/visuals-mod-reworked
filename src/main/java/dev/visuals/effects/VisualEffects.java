@@ -54,6 +54,9 @@ public final class VisualEffects {
         if (cfg.isEffectActive(Tabs.FOLIAGE)) {
             fallingLeaves(cfg, level, player);
         }
+        if (cfg.isEffectActive(Tabs.EVENTS)) {
+            meteorShowers(cfg, level, player);
+        }
         if (cfg.isEffectActive(Tabs.TOUCH)) {
             waterRings(cfg, level, player);
             groundDust(cfg, level, player);
@@ -155,6 +158,37 @@ public final class VisualEffects {
         }
     }
 
+
+    /**
+     * Draws occasional cosmetic meteor streaks with short-lived glowing dust particles.
+     * This is a client particle effect, not an entity or a change to the world.
+     */
+    private static void meteorShowers(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "events.meteorShowers", true)) return;
+        double frequency = Math.max(0.0, Math.min(5.0, number(cfg, "events.frequency", 0.5)));
+        if (frequency <= 0.0 || Math.random() > 0.0005 * frequency) return;
+
+        // Keep the streak above the player and within a modest visible radius.
+        double startX = player.getX() + (Math.random() - 0.5) * 48.0;
+        double startY = player.getY() + 22.0 + Math.random() * 18.0;
+        double startZ = player.getZ() + (Math.random() - 0.5) * 48.0;
+        double velocityX = (Math.random() - 0.5) * 0.42;
+        double velocityY = -0.22 - Math.random() * 0.12;
+        double velocityZ = (Math.random() - 0.5) * 0.42;
+        int color = Math.random() < 0.7 ? 0xFFF6D5A2 : 0xFFB8D8FF;
+
+        for (int i = 0; i < 9; i++) {
+            double progress = i / 9.0;
+            double x = startX - velocityX * progress * 5.0;
+            double y = startY - velocityY * progress * 5.0;
+            double z = startZ - velocityZ * progress * 5.0;
+            BlockPos pos = BlockPos.containing(x, y, z);
+            if (!level.getBlockState(pos).isAir()) continue;
+            float scale = i == 0 ? 1.25f : 0.72f;
+            level.addParticle(new DustParticleOptions(color, scale), x, y, z,
+                    velocityX, velocityY, velocityZ);
+        }
+    }
 
     /** Checks for nearby vanilla torch light sources without loading additional chunks. */
     private static boolean hasNearbyTorch(Level level, BlockPos center) {
