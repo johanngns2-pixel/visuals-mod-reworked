@@ -72,18 +72,8 @@ public final class VisualEffects {
         if ("night".equals(time) && !night) return;
         if ("dusk".equals(time) && !dusk) return;
 
-        int amount = integer(cfg, "fireflies.amount", 24);
-        if (amount <= 0) return;
-        double chance = Math.min(0.8, amount / 180.0);
-        if (Math.random() > chance) return;
-
-        double range = 7.0;
-        double x = player.getX() + (Math.random() - 0.5) * range * 2.0;
-        double y = player.getY() + 1.0 + Math.random() * 3.0;
-        double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
-        BlockPos pos = BlockPos.containing(x, y, z);
-        boolean nearTorch = bool(cfg, "fireflies.nearTorches", true) && hasNearbyTorch(level, pos);
-        if (level.getMaxLocalRawBrightness(pos) > 10 && !nearTorch) return;
+        int amount = Math.max(0, Math.min(100, integer(cfg, "fireflies.amount", 24)));
+        if (amount == 0) return;
         String style = string(cfg, "fireflies.style", "pulse");
         double phase = (tickCounter % 40L) / 40.0;
         double pulse = 0.65 + 0.35 * Math.sin(phase * Math.PI * 2.0);
@@ -97,15 +87,24 @@ public final class VisualEffects {
                 0xFFFFE78A) & 0xFFFFFF;
         float glow = (float) Math.max(0.05, Math.min(1.5,
                 number(cfg, "fireflies.glow", 0.8) * styleScale));
-        double drift = (Math.random() - 0.5) * ("trail".equals(style) ? 0.035 : 0.012);
-        double vertical = "trail".equals(style) ? 0.002 : 0.006;
-        level.addParticle(new DustParticleOptions(color, glow),
-                x, y, z, drift, vertical, drift);
-        if ("trail".equals(style) && Math.random() < 0.55) {
-            double trailX = x - drift * 2.0;
-            double trailZ = z - drift * 2.0;
-            level.addParticle(new DustParticleOptions(color, Math.max(0.05f, glow * 0.55f)),
-                    trailX, y - 0.035, trailZ, drift * 0.45, 0.001, drift * 0.45);
+
+        // Amount controls the maximum attempted particles per update; rejection keeps the swarm sparse.
+        for (int i = 0; i < amount; i++) {
+            if (Math.random() > 0.35) continue;
+            double x = player.getX() + (Math.random() - 0.5) * 14.0;
+            double y = player.getY() + 1.0 + Math.random() * 3.0;
+            double z = player.getZ() + (Math.random() - 0.5) * 14.0;
+            BlockPos pos = BlockPos.containing(x, y, z);
+            boolean nearTorch = bool(cfg, "fireflies.nearTorches", true) && hasNearbyTorch(level, pos);
+            if (level.getMaxLocalRawBrightness(pos) > 10 && !nearTorch) continue;
+            double drift = (Math.random() - 0.5) * ("trail".equals(style) ? 0.035 : 0.012);
+            double vertical = "trail".equals(style) ? 0.002 : 0.006;
+            level.addParticle(new DustParticleOptions(color, glow), x, y, z, drift, vertical, drift);
+            if ("trail".equals(style) && Math.random() < 0.55) {
+                level.addParticle(new DustParticleOptions(color, Math.max(0.05f, glow * 0.55f)),
+                        x - drift * 2.0, y - 0.035, z - drift * 2.0,
+                        drift * 0.45, 0.001, drift * 0.45);
+            }
         }
     }
 
