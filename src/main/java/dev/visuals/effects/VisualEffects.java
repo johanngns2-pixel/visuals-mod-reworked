@@ -76,7 +76,8 @@ public final class VisualEffects {
         double y = player.getY() + 1.0 + Math.random() * 3.0;
         double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
         BlockPos pos = BlockPos.containing(x, y, z);
-        if (level.getMaxLocalRawBrightness(pos) > 10) return;
+        boolean nearTorch = bool(cfg, "fireflies.nearTorches", true) && hasNearbyTorch(level, pos);
+        if (level.getMaxLocalRawBrightness(pos) > 10 && !nearTorch) return;
         double drift = (Math.random() - 0.5) * 0.012;
         level.addParticle(ParticleTypes.END_ROD, x, y, z, drift, 0.006, drift);
     }
@@ -102,6 +103,20 @@ public final class VisualEffects {
                 (Math.random() - 0.5) * drift, 0.002, (Math.random() - 0.5) * drift);
     }
 
+
+
+    /** Checks for nearby vanilla torch light sources without loading additional chunks. */
+    private static boolean hasNearbyTorch(Level level, BlockPos center) {
+        for (BlockPos check : BlockPos.betweenClosed(
+                center.offset(-4, -2, -4), center.offset(4, 2, 4))) {
+            var block = level.getBlockState(check).getBlock();
+            if (block == Blocks.TORCH || block == Blocks.WALL_TORCH
+                    || block == Blocks.SOUL_TORCH || block == Blocks.SOUL_WALL_TORCH) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Uses the vanilla cherry-leaf particle around actual leaf blocks. This is a visual
