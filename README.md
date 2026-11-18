@@ -14,7 +14,7 @@ A client-side Fabric mod for Minecraft Java **1.21.11** (Java 21). It is designe
 | Preview scene and preview-only time/season/weather/wind controls | Implemented as a stylized GUI preview |
 | Settings catalogue for all 16 planned categories | Registered |
 | English and German labels for the settings catalogue | Added |
-| In-world particle effects | Partially implemented: fireflies, falling leaves, wildlife-style particles and touch feedback |
+| In-world particle effects | Partially implemented: fireflies and wildlife-style particles avoid spawning inside solid blocks; falling leaves and touch feedback |
 | Plant bending / footprints / water rings | Particle approximations only; no model deformation, persistent decals or reflective water shader |
 | Remaining renderer, weather, lighting and audio categories | Not yet implemented |
 | Spotify account/API integration | Not implemented; requires a separate integration design |

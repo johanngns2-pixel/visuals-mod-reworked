@@ -95,6 +95,9 @@ public final class VisualEffects {
             double y = player.getY() + 1.0 + Math.random() * 3.0;
             double z = player.getZ() + (Math.random() - 0.5) * 14.0;
             BlockPos pos = BlockPos.containing(x, y, z);
+            // Keep ambient particles out of solid blocks; this also avoids wasting particles
+            // where the player could never see them.
+            if (!level.getBlockState(pos).isAir()) continue;
             // In bright areas, the optional torch preference keeps fireflies near light sources.
             // In darkness they can appear naturally without an expensive block scan.
             if (level.getMaxLocalRawBrightness(pos) > 10
@@ -138,6 +141,8 @@ public final class VisualEffects {
             double x = player.getX() + (Math.random() - 0.5) * range * 2.0;
             double y = player.getY() + 1.5 + Math.random() * 4.0;
             double z = player.getZ() + (Math.random() - 0.5) * range * 2.0;
+            BlockPos spawnPos = BlockPos.containing(x, y, z);
+            if (!level.getBlockState(spawnPos).isAir()) continue;
             double drift = "bird".equals(type) ? 0.025
                     : ("bat".equals(type) ? 0.035 : ("dragonfly".equals(type) ? 0.012 : 0.006));
             var particle = "butterfly".equals(type) ? ParticleTypes.CHERRY_LEAVES
