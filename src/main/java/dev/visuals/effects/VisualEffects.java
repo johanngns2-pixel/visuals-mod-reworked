@@ -59,6 +59,7 @@ public final class VisualEffects {
             groundDust(cfg, level, player);
             snowSteps(cfg, level, player);
             surfaceSteps(cfg, level, player);
+            plantResponse(cfg, level, player);
         }
     }
 
@@ -251,6 +252,37 @@ public final class VisualEffects {
         level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state),
                 x, ground.getY() + 1.02, z,
                 (Math.random() - 0.5) * speed, 0.012, (Math.random() - 0.5) * speed);
+        touchEffectsThisTick++;
+    }
+
+    /**
+     * Cosmetic response near grass and flowers. The current implementation uses tiny leaf
+     * particles as feedback; it does not deform or animate block models.
+     */
+    private static void plantResponse(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "touch.bendingPlants", true) || !player.onGround()) return;
+        double speedSqr = player.getDeltaMovement().horizontalDistanceSqr();
+        if (speedSqr < 0.004 || Math.random() > 0.18) return;
+        double strength = Math.max(0.0, Math.min(1.0, number(cfg, "touch.bendStrength", 0.65)));
+        if (strength <= 0.0) return;
+        BlockPos base = player.blockPosition();
+        BlockPos plant = null;
+        for (BlockPos candidate : BlockPos.betweenClosed(
+                base.offset(-1, -1, -1), base.offset(1, 0, 1))) {
+            var state = level.getBlockState(candidate);
+            if (state.is(Blocks.SHORT_GRASS) || state.is(Blocks.FERN)
+                    || state.is(BlockTags.FLOWERS)) {
+                plant = candidate.immutable();
+                break;
+            }
+        }
+        if (plant == null || !canEmitTouch(cfg)) return;
+        double x = plant.getX() + 0.25 + Math.random() * 0.5;
+        double y = plant.getY() + 0.45 + Math.random() * 0.25;
+        double z = plant.getZ() + 0.25 + Math.random() * 0.5;
+        double push = Math.min(0.025, player.getDeltaMovement().horizontalDistance() * 0.08) * strength;
+        level.addParticle(ParticleTypes.CHERRY_LEAVES, x, y, z,
+                player.getDeltaMovement().x * push, 0.003, player.getDeltaMovement().z * push);
         touchEffectsThisTick++;
     }
 
