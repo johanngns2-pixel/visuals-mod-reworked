@@ -132,6 +132,12 @@ public final class VisualEffects {
         int range = Math.max(8, Math.min(64, integer(cfg, "foliage.renderRange", 32)));
         int attempts = Math.max(1, Math.min(18, amount / 3));
         double speed = Math.max(0.1, Math.min(2.0, number(cfg, "foliage.fallSpeed", 0.7)));
+        // Reuse the weather wind controls to influence the horizontal drift of falling leaves.
+        double windStrength = Math.max(0.0, Math.min(1.0, number(cfg, "weather.windStrength", 0.35)));
+        double windRadians = Math.toRadians(number(cfg, "weather.windDirection", 0.0));
+        double windX = Math.sin(windRadians) * windStrength * 0.018;
+        double windZ = Math.cos(windRadians) * windStrength * 0.018;
+        boolean gusts = bool(cfg, "weather.windGusts", true);
         for (int i = 0; i < attempts; i++) {
             int x = player.blockPosition().getX() + (int) (Math.random() * range * 2 - range);
             int y = player.blockPosition().getY() + (int) (Math.random() * 12 - 4);
@@ -142,9 +148,11 @@ public final class VisualEffects {
             double px = x + Math.random();
             double py = y + 0.85 + Math.random() * 0.25;
             double pz = z + Math.random();
-            double drift = (Math.random() - 0.5) * 0.012 * speed;
+            double gust = gusts ? 0.75 + Math.random() * 0.5 : 1.0;
+            double driftX = (Math.random() - 0.5) * 0.012 * speed + windX * gust;
+            double driftZ = (Math.random() - 0.5) * 0.012 * speed + windZ * gust;
             level.addParticle(ParticleTypes.CHERRY_LEAVES, px, py, pz,
-                    drift, -0.012 * speed, drift);
+                    driftX, -0.012 * speed, driftZ);
         }
     }
 
