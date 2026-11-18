@@ -151,8 +151,8 @@ public final class VisualEffects {
     }
 
     /**
-     * Uses the vanilla cherry-leaf particle around actual leaf blocks. This is a visual
-     * approximation (not a new particle texture) and never changes blocks.
+     * Spawns particles using the nearby leaf block's own state, so the particle texture
+     * follows the tree instead of always using the cherry-leaf sprite. Blocks are untouched.
      */
     private static void fallingLeaves(ConfigManager cfg, Level level, Player player) {
         if (!bool(cfg, "foliage.fallingLeaves", true)) return;
@@ -161,7 +161,7 @@ public final class VisualEffects {
         if (amount <= 0 || particleCap <= 0) return;
 
         int range = Math.max(8, Math.min(64, integer(cfg, "foliage.renderRange", 32)));
-        int attempts = Math.max(1, Math.min(18, Math.min(amount / 3, particleCap)));
+        int attempts = Math.max(1, Math.min(100, Math.min(amount, particleCap)));
         double speed = Math.max(0.1, Math.min(2.0, number(cfg, "foliage.fallSpeed", 0.7)));
         // Reuse the weather wind controls to influence the horizontal drift of falling leaves.
         double windStrength = Math.max(0.0, Math.min(1.0, number(cfg, "weather.windStrength", 0.35)));
@@ -174,7 +174,8 @@ public final class VisualEffects {
             int y = player.blockPosition().getY() + (int) (Math.random() * 12 - 4);
             int z = player.blockPosition().getZ() + (int) (Math.random() * range * 2 - range);
             BlockPos leafPos = new BlockPos(x, y, z);
-            if (!level.getBlockState(leafPos).is(BlockTags.LEAVES)) continue;
+            var leafState = level.getBlockState(leafPos);
+            if (!leafState.is(BlockTags.LEAVES)) continue;
 
             double px = x + Math.random();
             double py = y + 0.85 + Math.random() * 0.25;
@@ -182,7 +183,7 @@ public final class VisualEffects {
             double gust = gusts ? 0.75 + Math.random() * 0.5 : 1.0;
             double driftX = (Math.random() - 0.5) * 0.012 * speed + windX * gust;
             double driftZ = (Math.random() - 0.5) * 0.012 * speed + windZ * gust;
-            level.addParticle(ParticleTypes.CHERRY_LEAVES, px, py, pz,
+            level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, leafState), px, py, pz,
                     driftX, -0.012 * speed, driftZ);
         }
     }
