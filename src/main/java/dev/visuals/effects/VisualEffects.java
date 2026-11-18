@@ -127,10 +127,11 @@ public final class VisualEffects {
     private static void fallingLeaves(ConfigManager cfg, Level level, Player player) {
         if (!bool(cfg, "foliage.fallingLeaves", true)) return;
         int amount = integer(cfg, "foliage.leafAmount", 24);
-        if (amount <= 0) return;
+        int particleCap = integer(cfg, "foliage.particleCap", 500);
+        if (amount <= 0 || particleCap <= 0) return;
 
         int range = Math.max(8, Math.min(64, integer(cfg, "foliage.renderRange", 32)));
-        int attempts = Math.max(1, Math.min(18, amount / 3));
+        int attempts = Math.max(1, Math.min(18, Math.min(amount / 3, particleCap)));
         double speed = Math.max(0.1, Math.min(2.0, number(cfg, "foliage.fallSpeed", 0.7)));
         // Reuse the weather wind controls to influence the horizontal drift of falling leaves.
         double windStrength = Math.max(0.0, Math.min(1.0, number(cfg, "weather.windStrength", 0.35)));
