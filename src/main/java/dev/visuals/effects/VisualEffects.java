@@ -169,7 +169,7 @@ public final class VisualEffects {
         int particleCap = integer(cfg, "foliage.particleCap", 500);
         if (amount <= 0 || particleCap <= 0) return;
 
-        int range = Math.max(8, Math.min(64, integer(cfg, "foliage.renderRange", 32)));
+        int range = Math.max(8, Math.min(128, integer(cfg, "foliage.renderRange", 32)));
         int attempts = Math.max(1, Math.min(100, Math.min(amount, particleCap)));
         double speed = Math.max(0.1, Math.min(2.0, number(cfg, "foliage.fallSpeed", 0.7)));
         // Reuse the weather wind controls to influence the horizontal drift of falling leaves.
@@ -180,7 +180,7 @@ public final class VisualEffects {
         boolean gusts = bool(cfg, "weather.windGusts", true);
         for (int i = 0; i < attempts; i++) {
             int x = player.blockPosition().getX() + (int) (Math.random() * range * 2 - range);
-            int y = player.blockPosition().getY() + (int) (Math.random() * 12 - 4);
+            int y = player.blockPosition().getY() + (int) (Math.random() * 24 - 6);
             int z = player.blockPosition().getZ() + (int) (Math.random() * range * 2 - range);
             BlockPos leafPos = new BlockPos(x, y, z);
             var leafState = level.getBlockState(leafPos);
