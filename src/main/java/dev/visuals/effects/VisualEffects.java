@@ -83,12 +83,29 @@ public final class VisualEffects {
         BlockPos pos = BlockPos.containing(x, y, z);
         boolean nearTorch = bool(cfg, "fireflies.nearTorches", true) && hasNearbyTorch(level, pos);
         if (level.getMaxLocalRawBrightness(pos) > 10 && !nearTorch) return;
-        double drift = (Math.random() - 0.5) * 0.012;
+        String style = string(cfg, "fireflies.style", "pulse");
+        double phase = (tickCounter % 40L) / 40.0;
+        double pulse = 0.65 + 0.35 * Math.sin(phase * Math.PI * 2.0);
+        double flicker = Math.random() < 0.22 ? 0.28 : 1.0;
+        double styleScale = switch (style) {
+            case "flicker" -> flicker;
+            case "trail" -> 0.72;
+            default -> pulse;
+        };
         int color = integer(cfg, Math.random() < 0.5 ? "fireflies.primaryColor" : "fireflies.secondaryColor",
-                0xFFFFE78A);
-        float glow = (float) Math.max(0.15, Math.min(1.5, number(cfg, "fireflies.glow", 0.8)));
+                0xFFFFE78A) & 0xFFFFFF;
+        float glow = (float) Math.max(0.05, Math.min(1.5,
+                number(cfg, "fireflies.glow", 0.8) * styleScale));
+        double drift = (Math.random() - 0.5) * ("trail".equals(style) ? 0.035 : 0.012);
+        double vertical = "trail".equals(style) ? 0.002 : 0.006;
         level.addParticle(new DustParticleOptions(color, glow),
-                x, y, z, drift, 0.006, drift);
+                x, y, z, drift, vertical, drift);
+        if ("trail".equals(style) && Math.random() < 0.55) {
+            double trailX = x - drift * 2.0;
+            double trailZ = z - drift * 2.0;
+            level.addParticle(new DustParticleOptions(color, Math.max(0.05f, glow * 0.55f)),
+                    trailX, y - 0.035, trailZ, drift * 0.45, 0.001, drift * 0.45);
+        }
     }
 
     private static void wildlife(ConfigManager cfg, Level level, Player player) {
