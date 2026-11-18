@@ -6,7 +6,7 @@
   "description": "Rein visuelle, clientseitige Mod: Himmel, Wetter, Licht, Partikel und mehr, steuerbar über ein vollständiges Einstellungs-GUI.",
   "authors": [],
   "contact": {
-    "sources": "https://github.com/johanngns2-pixel/visuals-mod"
+    "sources": "https://github.com/johanngns2-pixel/visuals-mod-reworked"
   },
   "license": "All-Rights-Reserved",
   "environment": "client",

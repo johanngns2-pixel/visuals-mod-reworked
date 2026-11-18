@@ -1,47 +1,50 @@
 # Visuals
 
-Rein visuelle, clientseitige Fabric-Mod für Minecraft Java **1.21.11** (Java 21). Sie fügt keine Blöcke, Items oder Spielmechaniken hinzu und verändert nur, was der eigene Client zeichnet oder abspielt. Gesteuert wird alles über ein vollständiges Einstellungs-GUI.
+A client-side Fabric mod for Minecraft Java **1.21.11** (Java 21). It is designed for visual and ambient customization only: it does not add blocks, items, entities with gameplay behavior, or server-side mechanics.
 
-## Stand
+## Current implementation status
 
-| Abschnitt | Inhalt | Status |
-|---|---|---|
-| 1 | Config, zentrale Options-Registrierung, Sprachdateien | fertig |
-| 2 | Screen mit Reiter-Leiste | offen |
-| 3 | Beispiel-Reiter „Himmel“ und Widget-Typen | offen |
-| 4 | Live-Vorschau | offen |
-| 5 | Presets, Import/Export, Suche, Rückgängig | offen |
+| Area | Status |
+|---|---|
+| Central option registry and typed configuration | Implemented |
+| Versioned JSON config, delayed atomic save, corrupt-file backup | Implemented |
+| Fullscreen settings screen, tab navigation and option widgets | Implemented |
+| Sliders, dropdowns, color picker, text editing and reset/context actions | Implemented |
+| Search, presets, import/export and undo/redo UI | Present in the current code; needs runtime verification |
+| Preview scene and preview-only time/season/weather/wind controls | Implemented as a stylized GUI preview |
+| Settings catalogue for all 16 planned categories | Registered |
+| English and German labels for the settings catalogue | Added |
+| Actual in-world rendering/audio effects for every category | Not yet implemented |
+| Spotify account/API integration | Not implemented; requires a separate integration design |
 
-## Bauen
+**Important:** A registered setting is not proof that its corresponding in-world effect is active. The categories currently have a settings catalogue; their renderer/audio hooks still need to be implemented and tested individually. The preview is a GUI illustration, not a replacement for the Minecraft world renderer.
 
-```
-./gradlew build        # Jar liegt danach in build/libs/
-./gradlew runClient    # Testclient starten
-```
+## Categories
 
-Versionen (siehe `gradle.properties`): Fabric Loader 0.18.1, Loom 1.14, Fabric API 0.141.3+1.21.11. Mappings: Mojang (Yarn wird nach 1.21.11 nicht mehr gepflegt).
+General, Sky, Glint, Seasons, Weather & Fog, Light, Foliage & Particles, Fireflies, Puddles, Wildlife, Biomes, World Events, Touch, Sound, AFK/Cinema and Spotify.
 
-## Aufbau
+## Build
 
-```
-dev.visuals
-├── VisualsMod              Einstiegspunkt (nur Client)
-├── config                  OptionDef, OptionRegistry, ConfigManager, Codecs, Migrationen
-│   └── def                 Reiter und Optionen (hier wird definiert, nichts sonst)
-├── util                    Log
-└── (folgen) gui, effects, mixin
+```bash
+./gradlew build
+./gradlew runClient
 ```
 
-## Neue Option hinzufügen
+The resulting mod JAR is in `build/libs/`.
 
-1. In der passenden `…Options`-Klasse unter `config/def` eine Konstante anlegen, z. B.
-   `OptionDef.slider("sky.starAmount", 1.0, 0.0, 2.0, 0.05).group("stars").build()`
-2. In deren `register(...)` eine Zeile ergänzen.
-3. In `en_us.json` und `de_de.json` Name, Tooltip und Gruppe eintragen
-   (`visuals.option.<id>.name`, `.tooltip`, `visuals.group.<reiter>.<gruppe>`).
+## Runtime requirements
 
-Das GUI baut sich daraus selbst auf.
+- Minecraft Java 1.21.11
+- Java 21
+- Fabric Loader and Fabric API versions configured in `gradle.properties`
 
-## Config
+## Configuration
 
-`config/visuals/config.json`, mit `configVersion`. Beschädigte Dateien werden als `config.json.broken-<zeit>` beiseitegelegt, danach gelten die Standardwerte. Migrationen liegen in `ConfigMigrations`.
+The configuration is stored at `config/visuals/config.json`. Custom presets are stored below `config/visuals/presets/`. The registry is the source of truth for option IDs, types, defaults, limits and dependencies.
+
+## Development notes
+
+- Keep this mod client-only.
+- Do not introduce gameplay-affecting blocks, items, entities or server logic.
+- Keep optional integrations optional and check compatibility before using renderer-specific APIs.
+- Do not claim an effect is implemented until its runtime behavior has been verified in a Minecraft client.
