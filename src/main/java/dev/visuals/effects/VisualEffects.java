@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.DustParticleOptions;
-import org.joml.Vector3f;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.tags.BlockTags;
@@ -85,11 +84,8 @@ public final class VisualEffects {
         double drift = (Math.random() - 0.5) * 0.012;
         int color = integer(cfg, Math.random() < 0.5 ? "fireflies.primaryColor" : "fireflies.secondaryColor",
                 0xFFFFE78A);
-        float red = ((color >> 16) & 0xFF) / 255.0f;
-        float green = ((color >> 8) & 0xFF) / 255.0f;
-        float blue = (color & 0xFF) / 255.0f;
         float glow = (float) Math.max(0.15, Math.min(1.5, number(cfg, "fireflies.glow", 0.8)));
-        level.addParticle(new DustParticleOptions(new Vector3f(red, green, blue), glow),
+        level.addParticle(new DustParticleOptions(color, glow),
                 x, y, z, drift, 0.006, drift);
     }
 
