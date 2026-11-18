@@ -53,6 +53,7 @@ public final class VisualEffects {
         if (cfg.isEffectActive(Tabs.TOUCH)) {
             waterRings(cfg, level, player);
             groundDust(cfg, level, player);
+            snowSteps(cfg, level, player);
         }
     }
 
@@ -154,6 +155,20 @@ public final class VisualEffects {
         double z = player.getZ() + (Math.random() - 0.5) * 0.45;
         level.addParticle(ParticleTypes.POOF, x, ground.getY() + 1.02, z,
                 (Math.random() - 0.5) * 0.012, 0.008, (Math.random() - 0.5) * 0.012);
+    }
+
+
+    /** Small snowflake puffs at the player's feet on snow; a particle approximation, not terrain deformation. */
+    private static void snowSteps(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "touch.snowDents", true) || !player.onGround()) return;
+        if (player.getDeltaMovement().horizontalDistanceSqr() < 0.0064 || Math.random() > 0.24) return;
+        BlockPos ground = player.blockPosition().below();
+        var block = level.getBlockState(ground).getBlock();
+        if (block != Blocks.SNOW && block != Blocks.SNOW_BLOCK && block != Blocks.POWDER_SNOW) return;
+        double x = player.getX() + (Math.random() - 0.5) * 0.4;
+        double z = player.getZ() + (Math.random() - 0.5) * 0.4;
+        level.addParticle(ParticleTypes.SNOWFLAKE, x, ground.getY() + 1.03, z,
+                (Math.random() - 0.5) * 0.008, 0.012, (Math.random() - 0.5) * 0.008);
     }
 
     private static boolean bool(ConfigManager cfg, String id, boolean fallback) {
