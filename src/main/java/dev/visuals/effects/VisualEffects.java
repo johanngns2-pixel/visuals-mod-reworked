@@ -54,6 +54,9 @@ public final class VisualEffects {
         if (cfg.isEffectActive(Tabs.FOLIAGE)) {
             fallingLeaves(cfg, level, player);
         }
+        if (cfg.isEffectActive(Tabs.SKY)) {
+            shootingStars(cfg, level, player);
+        }
         if (cfg.isEffectActive(Tabs.EVENTS)) {
             meteorShowers(cfg, level, player);
         }
@@ -187,6 +190,31 @@ public final class VisualEffects {
             float scale = i == 0 ? 1.25f : 0.72f;
             level.addParticle(new DustParticleOptions(color, scale), x, y, z,
                     velocityX, velocityY, velocityZ);
+        }
+    }
+
+    /** Configurable night-sky shooting stars using the Sky tab's frequency, color and trail length. */
+    private static void shootingStars(ConfigManager cfg, Level level, Player player) {
+        long dayTime = level.getDayTime() % 24000L;
+        if (dayTime < 12500L || dayTime > 23500L) return;
+        double frequency = Math.max(0.0, Math.min(10.0, number(cfg, "sky.shootingFrequency", 1.0)));
+        if (frequency <= 0.0 || Math.random() > frequency / 300.0) return;
+        int trail = Math.max(2, Math.min(60, integer(cfg, "sky.shootingTrail", 12)));
+        int color = integer(cfg, "sky.shootingColor", 0xFFFFFFFF) & 0xFFFFFF;
+        double startX = player.getX() + (Math.random() - 0.5) * 56.0;
+        double startY = player.getY() + 24.0 + Math.random() * 24.0;
+        double startZ = player.getZ() + (Math.random() - 0.5) * 56.0;
+        double velocityX = (Math.random() - 0.5) * 0.55;
+        double velocityY = -0.28 - Math.random() * 0.16;
+        double velocityZ = (Math.random() - 0.5) * 0.55;
+        for (int i = 0; i < trail; i++) {
+            double progress = i / (double) trail;
+            double x = startX - velocityX * progress * 5.0;
+            double y = startY - velocityY * progress * 5.0;
+            double z = startZ - velocityZ * progress * 5.0;
+            if (!level.getBlockState(BlockPos.containing(x, y, z)).isAir()) continue;
+            float size = (float) (1.15 * (1.0 - progress * 0.55));
+            level.addParticle(new DustParticleOptions(color, size), x, y, z, velocityX, velocityY, velocityZ);
         }
     }
 
