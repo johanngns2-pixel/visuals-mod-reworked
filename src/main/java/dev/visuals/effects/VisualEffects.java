@@ -58,6 +58,7 @@ public final class VisualEffects {
             shootingStars(cfg, level, player);
         }
         if (cfg.isEffectActive(Tabs.EVENTS)) {
+            auroraEffect(cfg, level, player);
             meteorShowers(cfg, level, player);
         }
         if (cfg.isEffectActive(Tabs.TOUCH)) {
@@ -190,6 +191,28 @@ public final class VisualEffects {
             float scale = i == 0 ? 1.25f : 0.72f;
             level.addParticle(new DustParticleOptions(color, scale), x, y, z,
                     velocityX, velocityY, velocityZ);
+        }
+    }
+
+    /** Subtle aurora-like ribbons made from ambient dust particles, not a sky shader. */
+    private static void auroraEffect(ConfigManager cfg, Level level, Player player) {
+        if (!bool(cfg, "events.aurora", true)) return;
+        long dayTime = level.getDayTime() % 24000L;
+        if (dayTime < 13000L || dayTime > 23000L || Math.random() > 0.012) return;
+        double centerX = player.getX() + (Math.random() - 0.5) * 28.0;
+        double centerY = player.getY() + 30.0 + Math.random() * 12.0;
+        double centerZ = player.getZ() + (Math.random() - 0.5) * 28.0;
+        int color = Math.random() < 0.7 ? 0x75F0B2 : 0xA78BFA;
+        double phase = tickCounter * 0.035;
+        for (int i = 0; i < 18; i++) {
+            double t = i / 17.0;
+            double x = centerX + (t - 0.5) * 18.0;
+            double z = centerZ + Math.sin(t * Math.PI * 2.0 + phase) * 2.2;
+            double y = centerY + Math.sin(t * Math.PI * 3.0 + phase) * 1.4;
+            if (!level.getBlockState(BlockPos.containing(x, y, z)).isAir()) continue;
+            float size = (float) (0.65 + 0.35 * Math.sin(t * Math.PI));
+            level.addParticle(new DustParticleOptions(color, size), x, y, z,
+                    0.0, 0.002 + Math.sin(phase + t * 4.0) * 0.001, 0.0);
         }
     }
 
